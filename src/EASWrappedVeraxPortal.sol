@@ -13,19 +13,14 @@ import { Attestation, AttestationRequest, DelegatedAttestationRequest, Delegated
  * @title EASWrappedVeraxPortal
  * @notice This is a Verax Portal that interfaces as if it is a (limited) EAS registry
  */
-contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, PausableUpgradeable, IEAS, AbstractPortal {
-  mapping(address user => mapping(bytes32 schema => uint32)) public userAttestations;
+contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, AbstractPortal {
+  mapping(address user => mapping(bytes32 schema => bytes32)) public userAttestations;
 
   error NotImplemented();
 
-  function initialize(
-    address[] calldata _modules,
-    address _moduleRegistry,
-    address _attestationRegistry
-  ) public override initializer {
+  function initialize(address[] calldata _modules, address _router) public override initializer {
     __Ownable_init();
-    __Pausable_init();
-    AbstractPortal.initialize(_modules, _moduleRegistry, _attestationRegistry);
+    AbstractPortal.initialize(_modules, _router);
   }
 
   function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
@@ -34,14 +29,6 @@ contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, PausableU
       interfaceID == type(OwnableUpgradeable).interfaceId ||
       interfaceID == type(PausableUpgradeable).interfaceId ||
       AbstractPortal.supportsInterface(interfaceID));
-  }
-
-  function pause() public onlyOwner {
-    _pause();
-  }
-
-  function unpause() public onlyOwner {
-    _unpause();
   }
 
   // solhint-disable-next-line no-empty-blocks
@@ -77,9 +64,9 @@ contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, PausableU
 
         validationPayloads[currentIndex] = new bytes[](0);
 
-        userAttestations[recipient][multiAttestationRequests[i].schema] = attestationId;
+        attestationIds[currentIndex] = bytes32(abi.encode(attestationId));
 
-        attestationIds[currentIndex] = bytes32(abi.encodePacked(attestationId));
+        userAttestations[recipient][multiAttestationRequests[i].schema] = attestationIds[currentIndex];
 
         unchecked {
           j++;

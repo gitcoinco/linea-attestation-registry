@@ -3,20 +3,16 @@ import { ethers, run, upgrades } from "hardhat";
 async function main() {
   console.log("Deploying EASWrappedVeraxPortal...");
   const EASWrappedVeraxPortal = await ethers.getContractFactory("EASWrappedVeraxPortal");
-  const portal = await upgrades.deployProxy(
-    EASWrappedVeraxPortal,
-    [[], process.env.MODULE_REGISTRY_ADDRESS, process.env.ATTESTATION_REGISTRY_ADDRESS],
-    {
-      kind: "uups",
-    },
-  );
+  const portal = await upgrades.deployProxy(EASWrappedVeraxPortal, [[], process.env.ROUTER_ADDRESS], {
+    kind: "uups",
+  });
   await portal.waitForDeployment();
   const portalProxyAddress = await portal.getAddress();
   const portalImplementationAddress = await upgrades.erc1967.getImplementationAddress(portalProxyAddress);
 
-  await run("verify:verify", {
-    address: portalProxyAddress,
-  });
+  // await run("verify:verify", {
+  //   address: portalProxyAddress,
+  // });
 
   console.log(`EASWrappedVeraxPortal successfully deployed and verified!`);
   console.log(`Proxy is at ${portalProxyAddress}`);
