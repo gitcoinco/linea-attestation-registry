@@ -67,7 +67,7 @@ contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, Pau
     AttestationPayload[] memory attestationsPayloads = new AttestationPayload[](numAttestations);
     bytes[][] memory validationPayloads = new bytes[][](numAttestations);
 
-    uint32 attestationId = AbstractPortal.attestationRegistry.getAttestationIdCounter();
+    uint32 attestationId = AbstractPortal.attestationRegistry.getAttestationIdCounter() + 1;
     bytes32[] memory attestationIds = new bytes32[](numAttestations);
 
     uint256 currentIndex = 0;
