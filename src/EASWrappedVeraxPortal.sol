@@ -13,14 +13,21 @@ import { Attestation, AttestationRequest, DelegatedAttestationRequest, Delegated
  * @title EASWrappedVeraxPortal
  * @notice This is a Verax Portal that interfaces as if it is a (limited) EAS registry
  */
-contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, AbstractPortal {
+contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, PausableUpgradeable, AbstractPortal {
   mapping(address user => mapping(bytes32 schema => bytes32)) public userAttestations;
 
   error NotImplemented();
 
+  address public attesterAddress;
+
   function initialize(address[] calldata _modules, address _router) public override initializer {
     __Ownable_init();
     AbstractPortal.initialize(_modules, _router);
+  }
+
+  modifier onlyAttester() {
+    require(msg.sender == attesterAddress, "Only the attester can call this function");
+    _;
   }
 
   function supportsInterface(bytes4 interfaceID) public pure override returns (bool) {
@@ -31,12 +38,24 @@ contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, Abs
       AbstractPortal.supportsInterface(interfaceID));
   }
 
+  function pause() public onlyOwner {
+    _pause();
+  }
+
+  function unpause() public onlyOwner {
+    _unpause();
+  }
+
   // solhint-disable-next-line no-empty-blocks
   function _authorizeUpgrade(address) internal override onlyOwner {}
 
+  function setAttesterAddress(address _attesterAddress) external onlyOwner {
+    attesterAddress = _attesterAddress;
+  }
+
   function multiAttest(
     MultiAttestationRequest[] memory multiAttestationRequests
-  ) external payable returns (bytes32[] memory) {
+  ) external payable override whenNotPaused onlyAttester returns (bytes32[] memory) {
     uint256 numAttestations = 0;
     for (uint256 i = 0; i < multiAttestationRequests.length; ) {
       unchecked {
@@ -84,7 +103,9 @@ contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, Abs
     return attestationIds;
   }
 
-  function multiRevoke(MultiRevocationRequest[] calldata multiRevocationRequests) external payable override {
+  function multiRevoke(
+    MultiRevocationRequest[] calldata multiRevocationRequests
+  ) external payable override whenNotPaused onlyAttester {
     uint256 numRevocations = 0;
     for (uint256 i = 0; i < multiRevocationRequests.length; ) {
       unchecked {
