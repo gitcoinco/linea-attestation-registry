@@ -20,13 +20,17 @@ contract EASWrappedVeraxPortal is UUPSUpgradeable, OwnableUpgradeable, IEAS, Pau
 
   address public attesterAddress;
 
+  error OnlyAttester();
+
   function initialize(address[] calldata _modules, address _router) public override initializer {
     __Ownable_init();
     AbstractPortal.initialize(_modules, _router);
   }
 
   modifier onlyAttester() {
-    require(msg.sender == attesterAddress, "Only the attester can call this function");
+    if (msg.sender != attesterAddress) {
+      revert OnlyAttester();
+    }
     _;
   }
 

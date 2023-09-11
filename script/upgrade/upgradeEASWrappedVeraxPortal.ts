@@ -10,9 +10,9 @@ async function main() {
   await upgrades.upgradeProxy(proxyAddress, EASWrappedVeraxPortal);
   const implementationAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
 
-  await run("verify:verify", {
-    address: proxyAddress,
-  });
+  // await run("verify:verify", {
+  //   address: proxyAddress,
+  // });
 
   console.log(`EASWrappedVeraxPortal successfully upgraded and verified!`);
   console.log(`Proxy is at ${proxyAddress}`);
