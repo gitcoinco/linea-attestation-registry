@@ -13,6 +13,10 @@ const config: HardhatUserConfig = {
         version: "0.8.21",
         settings: {
           evmVersion: "paris",
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
         },
       },
     ],
@@ -21,6 +25,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {},
     "linea-goerli": {
+      gasPrice: 114868572,
       url: `https://linea-goerli.infura.io/v3/${process.env.INFURA_KEY ?? ""}`,
       accounts: [process.env.PRIVATE_KEY ?? ""],
     },
